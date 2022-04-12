@@ -5,17 +5,24 @@ import contatoEdit from "../components/Contatos/edit.vue";
 
 const routes = [
     {
+        name: "home",
         path: "/",
         component: contatoIndex,
     },
     {
+        name: "criarContato",
         path: "/contato/create",
         component: contatoCreate,
     },
     {
+        name: "editarContato",
         path: "/contato/edit/:id",
         component: contatoEdit,
-        props: true,
+    },
+    {
+        name: "updateContato",
+        path: "/contato/update/:id",
+        component: contatoEdit,
     },
 ];
 

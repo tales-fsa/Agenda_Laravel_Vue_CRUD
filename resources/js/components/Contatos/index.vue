@@ -18,16 +18,19 @@
                     <td>{{ contato.nome }}</td>
                     <td>{{ contato.telefone }}</td>
                     <td>
-                        <a
+                        <router-link
+                            :to="{
+                                name: 'editarContato',
+                                params: { id: contato.id },
+                            }"
                             class="btn btn-primary mx-1 px-3"
-                            @click="onEdit(contato.id)"
                             ><i class="fas fa-check"></i
-                        ></a>
+                        ></router-link>
                         <form @submit.prevent="create" style="display: inline">
                             <button
                                 type="submit"
                                 class="btn btn-danger mx-1 px-3"
-                                @click="onDelete(contato.id)"
+                                @click="deleteContato(contato.id)"
                             >
                                 <i class="far fa-trash-alt"></i>
                             </button>
@@ -44,62 +47,69 @@
             </tbody>
         </table>
         <div>
-            <button class="btn btn-success col-1" @click="newContato()">
+            <router-link
+                :to="{ name: 'criarContato' }"
+                class="btn btn-success col-1"
+            >
                 Novo
-            </button>
+            </router-link>
         </div>
     </div>
 </template>
-<script setup>
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-let contatos = ref([]);
-
-onMounted(async () => {
-    getContatos();
-});
-
-const newContato = () => {
-    router.push("/contato/create");
-};
-
-const getContatos = async () => {
-    let response = await axios.get("/api/index");
-    contatos.value = response.data.contatos;
-    console.log("contatos", contatos.value);
-};
-
-const onEdit = (id) => {
-    router.push("/contato/edit/" + id);
-};
-
-const onDelete = (id) => {
-    Swal.fire({
-        title: "Gostaria de apagar o contato ?",
-        text: "O registro será apagado definitivamnete",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonText: "Cancelar",
-        confirmButtonText: "Apagar",
-    }).then((result) => {
-        if (result.value) {
-            axios
-                .get("/api/delete/" + id)
-                .then(() => {
-                    Swal.fire(
-                        "Delete",
-                        "Contato deletado com sucesso",
-                        "success"
-                    );
-                    getContatos();
+<script>
+export default {
+    name: "contatos",
+    data() {
+        return {
+            contatos: [],
+        };
+    },
+    mounted() {
+        this.getContatos();
+    },
+    methods: {
+        async getContatos() {
+            await axios
+                .get("/api/index")
+                .then((response) => {
+                    this.contatos = response.data.contatos;
                 })
-                .catch(() => {
-                    Swal.fire("Falha !", "Algo aconteceu de errado.", "Aviso");
+                .catch((error) => {
+                    console.log(error);
+                    this.contatos = [];
                 });
-        }
-    });
+        },
+        deleteContato(id) {
+            Swal.fire({
+                title: "Gostaria de apagar o contato ?",
+                text: "O registro será apagado definitivamnete",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonText: "Cancelar",
+                confirmButtonText: "Apagar",
+            }).then((result) => {
+                if (result.value) {
+                    axios
+                        .get(`/api/delete/${id}`)
+                        .then(() => {
+                            Swal.fire(
+                                "Delete",
+                                "Contato deletado com sucesso",
+                                "success"
+                            );
+                            this.getContatos();
+                        })
+                        .catch(() => {
+                            Swal.fire(
+                                "Falha !",
+                                "Algo aconteceu de errado.",
+                                "Aviso"
+                            );
+                        });
+                }
+            });
+        },
+    },
 };
 </script>
